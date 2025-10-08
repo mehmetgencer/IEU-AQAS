@@ -1,12 +1,12 @@
 ---
-title: AQAS Activity $\rightarrow$ Learning Outcome $\rightarrow$ Program Outcome birleştirme formülasyonu
+title: AQAS- Program Outcomes Evaluation
 numbersections: true
 #$$ sudo apt-get install pandoc groff ghostscript
 #$ pandoc --pdf-engine=pdfroff --number-sections --output=IEU-AQAS-scheme.pdf IEU-AQAS-Scheme.md
+#$ pandoc --toc --standalone --mathml -f markdown -t html5 IEU-AQAS-Scheme.md -o IEU-AQAS-Scheme.html
 ---
 
-
-# Curriculum to outcomes
+# From courses to program outcomes
 
 ## Program outcomes (PO) definition
 
@@ -30,7 +30,7 @@ For the sake of simplicity the matrix $Y_c$ is a binary matrix, i.e. the values 
 
 # Evaluation
 
-## Design (curriculum) level evaluation: Curriculum support for program outcomes
+## Evaluation based on course designs: New scheme (for the future)
 
 Here the aim is to evaluate the level which courses in the curriculum, via their learning outcomes, support the program outcomes.
 
@@ -40,22 +40,20 @@ One can then sum this over all courses in a program's curriculum to find the sup
 
 $$ \mathbf{z^c_{norm}}=\mathbf{z^c} \frac{ects_c}{TotalContrib_c}$$
 
-### Summary program outcomes matrix
 
 To find the support of the whole curriculum for each of the program outcomes, one must sum normalized contributions of all courses as follows (please see the practical note in the next section for a tentative, realistic calculation of the following): 
 
 $$\sum_{c \in C_p} \mathbf{z^c_{norm}}$$
 
-## A practical note and tentative evaluation based on student grades
+## A practical evaluation based on existing information
 
 In IEU system the syllabus declares the $\mathbf{z^c}$ matrix regardless of the activities' contributions. Ideally the declared matrix and matrix computed as a bove should be the same; i.e. in the future we must use the computed contributions matrix, $POcontrib$, instead of directly entering some numbers into the table in the syllabus. For now, however, we must skip the computations and use the declared contributions in the syllabus. Thus, for the rest of this section, assume that $\mathbf{z^c}$ is obtained from syllabus, rather than being derived by following A-to-LO and LO-to-PO contribution levels. 
 
-To furthe simplify evaluation, also assume that we only have the overall course grade (over 100) of students, rather than a grade breakdown for all course activities. Let's denote the grade of a student, $s$, who passed a course, $c$, in a diploma program, $p$, ad  $g_{s,c}^p$.  In this scheme averaging the value $g_{s,c}^p \mathbf{z^c_{norm}}$ over all students will give use the achievements of program outcomes based on success of program's students, $S_p$, in that particular course. Summing over all core courses will provide avhievement levels of each program outcomes as a vector:
+
+## Evaluation based on student grades: using existing information
+
+To simplify evaluation, also assume that we only have the overall course grade (over 100) of students, rather than a grade breakdown for all course activities. Let's denote the grade of a student, $s$, who passed a course, $c$, in a diploma program, $p$, ad  $g_{s,c}^p$.  In this scheme averaging the value $g_{s,c}^p \mathbf{z^c_{norm}}$ over all students will give use the achievements of program outcomes based on success of program's students, $S_p$, in that particular course. Summing over all core courses will provide avhievement levels of each program outcomes as a vector:
 
 $$\sum_{c \in C_p}{\overline{g}_{s,c}^p \mathbf{z^c_{norm}}}$$
 
-## Evidence based evaluation: grades support
 
-Let's say a student get some grades from all his/her courses. How much he/she achieved program outcomes? YUKARIDAKİ HESABI YAPARKEN X MATRİSİNİ ÖĞRENCİ NOT MATRİSİYLE ÇARPARAK YAPILACAK. NOT: OBS'den export edilen not dosyaları syllabus'taki activity'lerle uyumlu değil; bu konuda her ders için manuel olarak bir eşleştirme şemasının verilmesi gerekecek. Bunun her sömestr değişmesi de mümkün. 
-
-Let's say the program has several students. What is the overall level of achievement of program outcomes? TÜM BÖLÜM ÖĞRENCİLERİNİN ACHIEVEMENT'LARIN ORTALAMASI ALINACAK.

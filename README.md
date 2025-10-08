@@ -39,7 +39,7 @@ In the following order:
 Something like:
 
     $cd tmp-akkreditasyon-webscrape
-    $~/venv-AQAS-app/bin/gunicorn  -w 4 -b 0.0.0.0:8080 mainApp:server --daemon
+    $~/venv-AQAS-app/bin/gunicorn  -w 4 -b 127.0.0.1:8080 mainApp:server --daemon #NGINX arkasında kullanılmalı, bkz: https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/
     $pkill gunicorn
 
 # Evidence matching scheme
