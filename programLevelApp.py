@@ -1,9 +1,10 @@
 #!/usr/bin/python3
+import base64
 from dash import Dash, html, dcc, Input, Output, State, callback # pyright: ignore[reportMissingImports]
 import dash_ag_grid as dag # pyright: ignore[reportMissingImports]
 import plotly.express as px # pyright: ignore[reportMissingImports]
 import plotly.graph_objs as go # pyright: ignore[reportMissingImports]
-import json, pprint
+import json, pprint, os, time
 import pandas as pd
 import numpy
 from pathlib import Path
@@ -13,6 +14,10 @@ from settings import *
 import evidencelibSimple
 
 
+gfilepath=Path(storage)/"evidence"/localsettings["evidence_single_filename"]
+gfile_mod_time = None
+if  os.path.exists(gfilepath):
+    gfile_mod_time = os.path.getmtime(gfilepath)
 
 app = Dash(server=False,routes_pathname_prefix=f"{localsettings['route_prefix']}/program_level/")
 #app = Dash(server=False,routes_pathname_prefix=f"/program_level/")
@@ -28,6 +33,27 @@ app.layout = html.Div([
     html.H2(children='1 - Evaluation based on course syllabi'), 
     html.Div(id="curriculum-eval-output",children="Program seçin..."),
     html.H2(children='2 - Evaluation based on student grades'), 
+    dcc.Upload(
+        id='upload-grades',
+        children=html.Div([
+            "'Drag and Drop' or ",
+            html.A('click here to upload student grades file'+f'{" (one already exists and was uploaded on "+time.ctime(gfile_mod_time)+")" if gfile_mod_time is not None else ""}')
+        ]),
+        style={
+            'width': '100%',
+            'height': '60px',
+            'lineHeight': '60px',
+            'borderWidth': '1px',
+            'borderStyle': 'dashed',
+            'borderRadius': '5px',
+            'textAlign': 'center',
+            'margin': '10px'
+        },
+        # Allow multiple files to be uploaded
+        #multiple=True
+    ),
+    html.Div(id='upload-grades-status'),
+    html.Br(),
     html.Div(id="evidence-eval-output",children="Program seçin..."),
 ])
 
@@ -100,7 +126,10 @@ def show_curriculum_eval(department,course):
 def show_evidence_based_eval(department, course):
     if course and not course=="Tüm dersler":courselist=[course]
     else:courselist=courses[department]
-    ed=evidencelibSimple.get_evidence_data(department=localsettings["department_full_names"][department])
+    try:
+        ed=evidencelibSimple.get_evidence_data(department=localsettings["department_full_names"][department])
+    except Exception as e:
+        return "AN ERROR OCCURRED WHILE USING THE GRADES FILE:"+str(e)
     courseAverages=[]
     courseCodes=[]
     total=None
@@ -144,3 +173,22 @@ def show_evidence_based_eval(department, course):
             "Vertical axis is program outcome numbers", html.Br(),
             "Horizontal axis: Achievement of program outcomes considering average student grades in each course (maximum possible contribution of each course is equal to its ECTS, see documentation for details)",html.Br(),
             gr2)
+
+@app.callback(Output('upload-grades-status', 'children'),
+              Input('upload-grades', 'contents'),
+              State('upload-grades', 'filename'),
+              State('upload-grades', 'last_modified'),
+              State('passwd', 'value'),
+              prevent_initial_call=True,
+              )
+def upload_grades(fcontent, fname, fdate,passwd):
+    if not checkpasswd(passwd):
+        return "CANNOT SAVE: Password incorrect"
+    content_type, content_string = fcontent.split(',')
+    print("FILE SELECTION:",fname,fcontent[:256])
+    if fname.split(".")[-1].lower()!="xlsx":
+        return("ERROR: Only excel/xlsx files allowed")
+    decoded = base64.b64decode(content_string)
+    fnametosave=Path(storage)/"evidence"/localsettings["evidence_single_filename"]
+    open(fnametosave,"wb").write(decoded)
+    return "SAVED. Now refresh page and choose program to analyse"
