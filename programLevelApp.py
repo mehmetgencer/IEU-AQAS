@@ -25,9 +25,9 @@ app.layout = html.Div([
         ),
     dcc.Dropdown(dict((d,d) for d in courses.keys()),None , id='dropdown-departments',disabled=True),
     dcc.Dropdown([],None,id='dropdown-courses',disabled=True),
-    html.H2(children='1 - Curriculum level evaluation'), 
+    html.H2(children='1 - Evaluation based on course syllabi'), 
     html.Div(id="curriculum-eval-output",children="Program seçin..."),
-    html.H2(children='2 - Evidence based evaluation'), 
+    html.H2(children='2 - Evaluation based on student grades'), 
     html.Div(id="evidence-eval-output",children="Program seçin..."),
 ])
 
@@ -63,6 +63,7 @@ def update_courselist_dropdown(department):
 def show_curriculum_eval(department,course):
     #curriculum sum
     total=None
+    zero_contrib_courses=[]
     if course and not course=="Tüm dersler":courselist=[course]
     else:courselist=courses[department]
     for course in courselist:
@@ -71,18 +72,24 @@ def show_curriculum_eval(department,course):
         #print("total contrib:",tmpcontrib)
         if tmpcontrib<=0:
             print(f"zero contrib: {course}")
+            zero_contrib_courses.append(course)
             continue
         znorm=courselib.get_pocontrib_from_sylabus(department,course,normalize=True,as_vector=True)
         if total is None:total=znorm
         else:total=total+znorm
     fig = go.Figure(data=[go.Bar(
+        #meta={"title":"Evaluation based on syllabi", "xaxis_title":"Level of support", "yaxis_title":"Program outcome no"},
         orientation="h",
         y=list(range(1,len(total)+1)), 
         x=total)])
     tmp=dcc.Graph(
             figure=fig
         )
-    return [f"Total contributions  to program outcomes (according to syllabi). Courses contributing:{courselist}",tmp]
+    return [f"Total contributions  to program outcomes (according to syllabi).", html.Br(),
+            f"Courses with empty PO matrix:{zero_contrib_courses}.",html.Br(),
+            "Vertical axis: Program outcome  (PO) numbers, Horizontal axis: Level of support for PO in syllabi of core courses.",html.Br(),
+            "Contribution of each course is equal to its ECTS.",html.Br(),
+            tmp]
 
 @app.callback(
     Output('evidence-eval-output', 'children'),
@@ -128,6 +135,12 @@ def show_evidence_based_eval(department, course):
     gr2=dcc.Graph(
             figure=fig2
         )
-    return (f"Courses considered: {courselist}\n These courses have no grade data: {noGradeCourses}\nAverage grades in courses:",
+    return (html.H3("Average grades in courses"),
+            f"These courses have no grade data: {noGradeCourses}",html.Br(),
+            "Average grades in courses (on a scale of 0.0-to-1.0):",
             gr1,
-            "Average achievement of program outcomes:",gr2)
+            html.H3("Achievement of program outcomes"),
+            "Average achievement of program outcomes.",html.Br(),
+            "Vertical axis is program outcome numbers", html.Br(),
+            "Horizontal axis: Achievement of program outcomes considering average student grades in each course (maximum possible contribution of each course is equal to its ECTS, see documentation for details)",html.Br(),
+            gr2)
