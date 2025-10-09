@@ -3,8 +3,10 @@ from dash import Dash, html, dcc, Input, Output, State, callback # pyright: igno
 from flask import Flask # pyright: ignore[reportMissingImports]
 import dash_ag_grid as dag # pyright: ignore[reportMissingImports]
 import plotly.express as px # pyright: ignore[reportMissingImports]
+import plotly.graph_objs as go # pyright: ignore[reportMissingImports]
 import json, pprint, math
 import pandas as pd
+import numpy as np
 from pathlib import Path
 from settings import * #localsettings, checkpasswd
 import evidencelibSimple, courselib
@@ -21,7 +23,9 @@ app.layout = html.Div([
         ),
     dcc.Dropdown(dict((d,d) for d in courses.keys()),None , id='dropdown-departments',disabled=True),
     dcc.Dropdown([],None,id='dropdown-courses',disabled=True),
-    html.H2(children='1 - Activity to learning outcomes (A-LO) matrix'), #, style={'textAlign':'center'}
+    html.H2(children="1 - Support for program outcomes (A-to-LO-to-PO)"),
+    html.P("Select department",id="posupport"),
+    html.H2(children='2 - Activity to learning outcomes (A-LO) matrix'), #, style={'textAlign':'center'}
     html.Ol(id="los",children="Learning outcomes: (Ders seçtiğinizde burası dolar)"),
     dag.AgGrid(
         id="alo-grid",
@@ -30,7 +34,7 @@ app.layout = html.Div([
         ),
     html.Div(id="alo-output"),
     html.Button('A-LO Değişikliklerini Kaydet', id='save-alo-grid-button', n_clicks=0),
-    html.H2(children="2 - Learning outcomes to Program outcomes (LO-PO) matrix"),
+    html.H2(children="3 - Learning outcomes to Program outcomes (LO-PO) matrix"),
     html.Ol(id="pos",children="Program outcomes: ..."),
     dag.AgGrid(
         id="lopo-grid",
@@ -39,8 +43,6 @@ app.layout = html.Div([
     ),
     html.Div(id="lopo-output"),
     html.Button('LO-PO Değişikliklerini Kaydet', id='save-lopo-grid-button', n_clicks=0),
-    html.H2(children="3 - Bu LO-PO matrix her PO ne kadar destek veriyor?"),
-    html.P("(Course program outcomes matrix burada otomatik oluşacak ama henüz kodlanmadı)"),
     
     ]
 )
@@ -220,6 +222,30 @@ def load_departmentpos(department):
     pos=program_outcomes[department]
     return [html.H3(children="Program outcomes list for department %s"%department)]+[html.Li(children=x) for x in pos]
 
+@callback(
+    Output("posupport", "children"),
+    Input('dropdown-departments', 'value'),
+    #Input("dropdown-courses", "value"),
+    prevent_initial_call=True,
+)
+def show_posupport(department):
+    zero_contrib_courses,posupport=courselib.get_total_po_support(department)
+    posupport=np.squeeze(np.asarray(posupport))
+    fig = go.Figure(data=[go.Bar(
+        orientation="h",
+        y=list(range(1,len(posupport)+1)), 
+        x=posupport)])
+    tmp=dcc.Graph(
+            figure=fig
+        )
+    print("posupport:",posupport)
+    return [
+        "Vertical axis show program outcome numbers",
+        html.Br(),
+        f"(Courses with zero po contribution: {zero_contrib_courses})",
+        "Each course contributes a total of its ECTS",
+        tmp
+    ]
 
 
 #server = app.server #see https://community.plotly.com/t/how-to-add-your-dash-app-to-flask/51870/2

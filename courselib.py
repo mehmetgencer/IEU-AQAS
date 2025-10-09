@@ -79,8 +79,17 @@ def get_course_contrib_to_po(department,course,normalize=True):
         pocontrib=pocontrib*(ects/total_pocontrib(department,course))
     return pocontrib
 
-def get_total_po_support(department):
+def get_total_po_support(department,course=None):
+    """
+    If course is none support by all courses is calculated
+    Returns a tuple: 
+        (
+            courses that contribute nothing (by mistake in syllabus),
+            PO support vector (sum znorm)
+        )
+    """
     courselist=courses[department]
+    if course:courselist=[course]
     total=None
     zero_contrib_courses=[]
     for course in courselist:
@@ -93,7 +102,7 @@ def get_total_po_support(department):
         znorm=get_course_contrib_to_po(department,course)
         if total is None:total=znorm
         else:total=total+znorm
-    return total
+    return zero_contrib_courses,total
 
 if __name__=="__main__":
     #print(get_pocontrib_from_sylabus("dba","BUS 210",normalize=True,as_vector=True))
