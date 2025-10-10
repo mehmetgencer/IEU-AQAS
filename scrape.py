@@ -26,7 +26,8 @@ def download_course(department, course, storage):
     print("Saved")
 
 def parse_course(department, course, storage):
-    print("PARSING:",department,course)
+    print("PARSING:",department,course, "...",end=" ")
+    parsingerrors=False
     fname=course+".html"
     html=open(Path(storage)/"syllabi"/department/fname,"r").read()
     import bs4
@@ -35,10 +36,10 @@ def parse_course(department, course, storage):
     idcounter=0
     for child in soup.find("table", id="evaluation_table1").contents[2:-1]:
         if type(child)==bs4.element.Tag and child.name=="tr":
-            print("XXX ASSESSMENT XXX",
-                  child.contents[1].get_text(),
-                  child.contents[3].contents[1].get_text(),
-                  child.contents[5].contents[1].get_text())
+            # print("XXX ASSESSMENT XXX",
+            #       child.contents[1].get_text(),
+            #       child.contents[3].contents[1].get_text(),
+            #       child.contents[5].contents[1].get_text())
             activity=child.contents[1].get_text().strip()
             nact=child.contents[3].contents[1].get_text().strip()
             if nact and nact!="-":
@@ -54,15 +55,15 @@ def parse_course(department, course, storage):
                 data["Activity"].append(activity)
                 data["ID"].append(nact)
                 data["Weighting"].append(None)
-            pprint.pp(data)
+            #pprint.pp(data)
 
     ono=0
     los=[]
     for child in soup.find("ul", id="outcome").find_all("li"):
         if type(child)==bs4.element.Tag:
             ono+=1
-            print("XXX OUTCOME %d XXX"%ono,
-                  child.get_text())
+            #print("XXX OUTCOME %d XXX"%ono,
+            #      child.get_text())
             los.append(child.get_text().strip())
     fname=course+".json"
     json.dump(los,open(Path(storage)/"lo-list"/department/fname,"w"))
@@ -74,18 +75,29 @@ def parse_course(department, course, storage):
     df.to_csv(Path(storage)/"a-to-lo"/department/fname, index=False)
     #POcontrib
     pocontrib={}
-    for row in soup.find("table", id="yeters").find_all("tr")[2:]:
-        rowcells=row.find_all("td")
-        poid=int([x for x in rowcells[0].contents[0].children][0])
-        points=[]
-        for x in rowcells[2:]:
-            point=" ".join([i.text for i in x.contents]).strip()
-            points.append(point)
-        pval=0
-        for i in range(5):
-            if points[i]:pval=i+1
-        #print(f"ROW {poid}/{pval}:{points}",rowcells)
-        pocontrib[poid]=pval
+    potablesoup=soup.find("table", id="yeters").find_all("tr")[2:]
+    
+    if len(potablesoup)==1: #Boş tablo
+        parsingerrors=True
+        print("PO table is empty")
+        for i in range(len(program_outcomes[department])):
+            pocontrib[i+1]=0
+    else:
+        for row in potablesoup:
+            rowcells=row.find_all("td")
+            poid=int([x for x in rowcells[0].contents[0].children][0])
+            points=[]
+            for x in rowcells[2:]:
+                point=" ".join([i.text for i in x.contents]).strip()
+                points.append(point)
+            pval=0
+            for i in range(5):
+                if points[i]:pval=i+1
+            #print(f"ROW {poid}/{pval}:{points}",rowcells)
+            pocontrib[poid]=pval
+    if sum(pocontrib.values())==0:
+           print(f"(Dikkat - toplam PO katkısı: {sum(pocontrib.values())})")
+           parsingerrors=True
     pocontrib["ects"]=int(" ".join([i.text for i in soup.find("div", id="ects_credit").contents]).strip())
     fname=course+".json"
     json.dump(pocontrib,open(Path(storage)/"pocontrib-in-syllabus"/department/fname,"w"))
@@ -97,6 +109,7 @@ def parse_course(department, course, storage):
     df=pd.DataFrame(d)
     fname=course+".csv"
     df.to_csv(Path(storage)/"lo-to-po"/department/fname, index=False)
+    if not parsingerrors:print("OK")
 
 @click.command()
 @click.option("--command", default="help", help="Give help")
@@ -120,12 +133,17 @@ def rootcmd(command, storage):
         print("Done downloading")
     elif command=="parse":
         for department in courses.keys():
+            print(f"---------------PARSING COURSES FOR DEPARTMENT: {department}-------------")
             os.makedirs(Path(storage)/"a-to-lo"/department, exist_ok=True)
             os.makedirs(Path(storage)/"lo-list"/department, exist_ok=True)
             os.makedirs(Path(storage)/"lo-to-po"/department, exist_ok=True)
             os.makedirs(Path(storage)/"pocontrib-in-syllabus"/department, exist_ok=True)
             for course in courses[department]:
-                parse_course(department,course,storage)
+                try:
+                    parse_course(department,course,storage)
+                except Exception as e:
+                    print(f"ERROR PARSING DEPT-COURSE: {department}/{course}")
+                    print(e)
     else:
         print("unknown command:", command)
 

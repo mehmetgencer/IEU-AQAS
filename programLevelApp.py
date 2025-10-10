@@ -111,7 +111,7 @@ def show_curriculum_eval(department,course):
     tmp=dcc.Graph(
             figure=fig
         )
-    return [f"Total contributions  to program outcomes (according to syllabi).", html.Br(),
+    return [f"Total contributions  to program outcomes for department: {department}(according to syllabi).", html.Br(),
             f"Courses with empty PO matrix:{zero_contrib_courses}.",html.Br(),
             "Vertical axis: Program outcome  (PO) numbers, Horizontal axis: Level of support for PO in syllabi of core courses.",html.Br(),
             "Contribution of each course is equal to its ECTS.",html.Br(),
@@ -169,7 +169,7 @@ def show_evidence_based_eval(department, course):
             "Average grades in courses (on a scale of 0.0-to-1.0):",
             gr1,
             html.H3("Achievement of program outcomes"),
-            "Average achievement of program outcomes.",html.Br(),
+            f"Average achievement of program outcomes for department: {department}.",html.Br(),
             "Vertical axis is program outcome numbers", html.Br(),
             "Horizontal axis: Achievement of program outcomes considering average student grades in each course (maximum possible contribution of each course is equal to its ECTS, see documentation for details)",html.Br(),
             gr2)

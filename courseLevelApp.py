@@ -23,9 +23,9 @@ app.layout = html.Div([
         ),
     dcc.Dropdown(dict((d,d) for d in courses.keys()),None , id='dropdown-departments',disabled=True),
     dcc.Dropdown([],None,id='dropdown-courses',disabled=True),
-    html.H2(children="1 - Support for program outcomes (A-to-LO-to-PO)"),
-    html.P("Select department",id="posupport"),
-    html.H2(children='2 - Activity to learning outcomes (A-LO) matrix'), #, style={'textAlign':'center'}
+    # html.H2(children="1 - Support for program outcomes (A-to-LO-to-PO)"),
+    # html.P("Select department",id="posupport"),
+    html.H2(children='1 - Activity to learning outcomes (A-LO) matrix'), #, style={'textAlign':'center'}
     html.Ol(id="los",children="Learning outcomes: (Ders seçtiğinizde burası dolar)"),
     dag.AgGrid(
         id="alo-grid",
@@ -34,7 +34,7 @@ app.layout = html.Div([
         ),
     html.Div(id="alo-output"),
     html.Button('A-LO Değişikliklerini Kaydet', id='save-alo-grid-button', n_clicks=0),
-    html.H2(children="3 - Learning outcomes to Program outcomes (LO-PO) matrix"),
+    html.H2(children="2 - Learning outcomes to Program outcomes (LO-PO) matrix"),
     html.Ol(id="pos",children="Program outcomes: ..."),
     dag.AgGrid(
         id="lopo-grid",
@@ -222,7 +222,7 @@ def load_departmentpos(department):
     pos=program_outcomes[department]
     return [html.H3(children="Program outcomes list for department %s"%department)]+[html.Li(children=x) for x in pos]
 
-@callback(
+""" @callback(
     Output("posupport", "children"),
     Input('dropdown-departments', 'value'),
     #Input("dropdown-courses", "value"),
@@ -245,7 +245,7 @@ def show_posupport(department):
         f"(Courses with zero po contribution: {zero_contrib_courses})",
         "Each course contributes a total of its ECTS",
         tmp
-    ]
+    ] """
 
 
 #server = app.server #see https://community.plotly.com/t/how-to-add-your-dash-app-to-flask/51870/2
