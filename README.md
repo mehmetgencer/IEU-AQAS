@@ -32,7 +32,7 @@ In the following order:
 
         $ ./scrape.py --command download
         $ ./scrape.py --command parse
-        $ HOST=0.0.0.0 PORT=8080 python3 gui.py
+        $ HOST=0.0.0.0 PORT=8080 python3 mainApp.py
 
 # Run test server
 
