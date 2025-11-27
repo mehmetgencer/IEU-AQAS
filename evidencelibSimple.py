@@ -9,7 +9,7 @@ from pathlib import Path
 from settings import *
 
 def _simplify_column_name(x):
-    return x.split("_")[0].replace(" ","").replace(".","")
+    return x.split("_")[0].replace(" ","").replace(".","").lower()
 
 def get_evidence_data(department=None, course=None):
     """
@@ -20,7 +20,7 @@ def get_evidence_data(department=None, course=None):
     colnames=[_simplify_column_name(x) for x in retval.columns]
     print("Simplified column names:",colnames)
     retval.columns=colnames
-    retval=retval[["ÖğrenciNo","ÖğrenciProgramı","DKodu","Ort","Harf"]]
+    retval=retval[["öğrencino","öğrenciprogramı","dkodu","ort","harf"]]
     retval.columns=["student_id","program","course","grade","letter_grade"]
     if department:
         if course:
